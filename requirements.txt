@@ -1,4 +1,3 @@
-requests
+httpx
+python-telegram-bot
 python-dotenv
-solana
-solders
