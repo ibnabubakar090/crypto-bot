@@ -448,30 +448,23 @@ def get_pair_data(pair: Dict) -> Optional[Dict]:
 # FILTER
 # ============================================================
 
+
 def is_candidate(data: Dict) -> bool:
 
-    symbol = (
-        data["symbol"]
-        .upper()
-        .strip()
-    )
-
-    name = (
-        data["name"]
-        .upper()
-        .strip()
-    )
+    symbol = data["symbol"].upper().strip()
+    name = data["name"].upper().strip()
 
     liquidity = data["liquidity"]
-
     age = data["pair_age_hours"]
 
     # Ignore major/stable tokens
     if symbol in IGNORED_SYMBOLS:
-
+        logger.info(
+            f"❌ {symbol} rejected: ignored symbol"
+        )
         return False
 
-    # Ignore tokens whose name is obviously a major asset
+    # Ignore major asset names
     if name in {
         "SOLANA",
         "USD COIN",
@@ -480,26 +473,41 @@ def is_candidate(data: Dict) -> bool:
         "WRAPPED BITCOIN",
         "WRAPPED ETHER",
     }:
-
+        logger.info(
+            f"❌ {symbol} rejected: major asset name"
+        )
         return False
 
     # Require minimum liquidity
     if liquidity < MIN_LIQUIDITY_USD:
-
+        logger.info(
+            f"❌ {symbol} rejected: low liquidity "
+            f"${liquidity:,.0f}"
+        )
         return False
 
     # Need valid creation time
     if age is None:
-
+        logger.info(
+            f"❌ {symbol} rejected: no pair creation time"
+        )
         return False
 
     # Focus on relatively new pairs
     if age > NEW_PAIR_MAX_AGE_HOURS:
-
+        logger.info(
+            f"❌ {symbol} rejected: pair too old "
+            f"({age:.1f}h)"
+        )
         return False
 
-    return True
+    logger.info(
+        f"✅ {symbol} candidate: "
+        f"age={age:.1f}h | "
+        f"liquidity=${liquidity:,.0f}"
+    )
 
+    return True
 
 # ============================================================
 # SCORING
