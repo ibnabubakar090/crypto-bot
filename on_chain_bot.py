@@ -251,198 +251,29 @@ async def fetch_solana_pairs() -> List[Dict]:
 # PARSE PAIR
 # ============================================================
 
-def get_pair_data(pair: Dict) -> Optional[Dict]:
+data = get_pair_data(pair)
 
-    try:
+if not data:
+    logger.info("❌ Pair skipped: get_pair_data returned None")
+    continue
 
-        base_token = pair.get(
-            "baseToken",
-            {}
-        )
+address = data.get("address", "")
 
-        symbol = (
-            base_token.get("symbol")
-            or "UNKNOWN"
-        )
+if not address:
+    logger.info(
+        f"❌ {data.get('symbol', 'UNKNOWN')} skipped: missing token address"
+    )
+    continue
 
-        name = (
-            base_token.get("name")
-            or "Unknown"
-        )
+logger.info(
+    f"🔎 Checking {data['symbol']} | "
+    f"address={address[:8]}... | "
+    f"age={data.get('pair_age_hours')} | "
+    f"liq=${data.get('liquidity', 0):,.0f}"
+)
 
-        address = (
-            base_token.get("address")
-            or ""
-        )
-
-        liquidity = float(
-            pair.get(
-                "liquidity",
-                {}
-            ).get(
-                "usd",
-                0
-            ) or 0
-        )
-
-        volume_24h = float(
-            pair.get(
-                "volume",
-                {}
-            ).get(
-                "h24",
-                0
-            ) or 0
-        )
-
-        volume_6h = float(
-            pair.get(
-                "volume",
-                {}
-            ).get(
-                "h6",
-                0
-            ) or 0
-        )
-
-        volume_1h = float(
-            pair.get(
-                "volume",
-                {}
-            ).get(
-                "h1",
-                0
-            ) or 0
-        )
-
-        price_change_24h = float(
-            pair.get(
-                "priceChange",
-                {}
-            ).get(
-                "h24",
-                0
-            ) or 0
-        )
-
-        price_change_6h = float(
-            pair.get(
-                "priceChange",
-                {}
-            ).get(
-                "h6",
-                0
-            ) or 0
-        )
-
-        price_change_1h = float(
-            pair.get(
-                "priceChange",
-                {}
-            ).get(
-                "h1",
-                0
-            ) or 0
-        )
-
-        market_cap = float(
-            pair.get(
-                "marketCap",
-                0
-            ) or 0
-        )
-
-        fdv = float(
-            pair.get(
-                "fdv",
-                0
-            ) or 0
-        )
-
-        price = float(
-            pair.get(
-                "priceUsd",
-                0
-            ) or 0
-        )
-
-        pair_created_at = pair.get(
-            "pairCreatedAt"
-        )
-
-        pair_age_hours = get_pair_age_hours(
-            pair_created_at
-        )
-
-        return {
-
-            "symbol": symbol,
-
-            "name": name,
-
-            "address": address,
-
-            "pair_address": pair.get(
-                "pairAddress",
-                ""
-            ),
-
-            "price": price,
-
-            "liquidity": liquidity,
-
-            "volume_24h": volume_24h,
-
-            "volume_6h": volume_6h,
-
-            "volume_1h": volume_1h,
-
-            "price_change_24h":
-                price_change_24h,
-
-            "price_change_6h":
-                price_change_6h,
-
-            "price_change_1h":
-                price_change_1h,
-
-            "market_cap":
-                market_cap,
-
-            "fdv":
-                fdv,
-
-            "pair_created_at":
-                pair_created_at,
-
-            "pair_age_hours":
-                pair_age_hours,
-
-            "dex":
-                pair.get(
-                    "dexId",
-                    "unknown"
-                ),
-
-            "url":
-                pair.get(
-                    "url",
-                    (
-                        "https://dexscreener.com/"
-                        "solana/"
-                        f"{pair.get('pairAddress', '')}"
-                    )
-                ),
-        }
-
-    except Exception as e:
-
-        logger.error(
-            f"Pair parsing error: {e}"
-        )
-
-        return None
-
+if not is_candidate(data):
+    continue
 
 # ============================================================
 # FILTER
