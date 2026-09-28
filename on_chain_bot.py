@@ -448,7 +448,6 @@ def get_pair_data(pair: Dict) -> Optional[Dict]:
 # FILTER
 # ============================================================
 
-
 def is_candidate(data: Dict) -> bool:
 
     symbol = data["symbol"].upper().strip()
